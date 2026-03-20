@@ -145,7 +145,7 @@ Aplicativo mobile — React Native reutiliza a maior parte da lógica de negóci
 Credenciais Padrão
 CampoValorEmailadmin@empresa.comSenhaadmin123
 
-⚠️ Altere a senha imediatamente após o primeiro acesso em Configurações > Alterar senha.
+Altere a senha imediatamente após o primeiro acesso em Configurações > Alterar senha.
 
 ## Screenshots
 
