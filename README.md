@@ -29,51 +29,6 @@ Z-API ou Twilio — envio real de WhatsApp
 Resend ou Gmail SMTP — envio real de email
 Asaas — cobranças Pix reais com confirmação automática via webhook
 
-
-Estrutura do Projeto
-cobrancas/
-├── backend/
-│   ├── src/
-│   │   ├── index.js              # Entry point, middlewares, rotas
-│   │   ├── db/
-│   │   │   ├── database.js       # Conexão SQLite, schema, migrations
-│   │   │   └── seed.js           # Dados de exemplo com datas relativas
-│   │   ├── routes/
-│   │   │   ├── auth.js           # Login, usuários, troca de senha
-│   │   │   ├── customers.js      # CRUD clientes, importação CSV
-│   │   │   ├── payments.js       # CRUD cobranças
-│   │   │   ├── recurrences.js    # Cobranças mensais automáticas
-│   │   │   ├── dashboard.js      # Resumo financeiro, gráfico mensal
-│   │   │   ├── reports.js        # Relatório financeiro, export CSV e PDF
-│   │   │   ├── settings.js       # Configurações da empresa
-│   │   │   └── ai.js             # Status, análise de risco, chat
-│   │   └── services/
-│   │       ├── ai.js             # Integração Claude (mensagens, risco, chat)
-│   │       ├── whatsapp.js       # Mock + Z-API + Twilio
-│   │       ├── email.js          # Mock + Resend + SMTP
-│   │       ├── pix.js            # Mock + Asaas
-│   │       └── scheduler.js      # Cron horário + geração de recorrências
-├── frontend/
-│   ├── src/
-│   │   ├── App.js                # Router, sidebar, busca global, toasts
-│   │   ├── App.css               # Design system completo
-│   │   ├── pages/
-│   │   │   ├── Login.js
-│   │   │   ├── Dashboard.js      # Cards, análise IA, chat, vencimentos
-│   │   │   ├── Customers.js      # Lista, detalhe, edição, importação CSV
-│   │   │   ├── Payments.js       # Lista com filtros, nova cobrança
-│   │   │   ├── Recurrences.js    # Cobranças recorrentes
-│   │   │   ├── Reports.js        # Gráfico mensal, export CSV/PDF
-│   │   │   ├── Messages.js       # Histórico de mensagens enviadas
-│   │   │   ├── Settings.js       # Empresa, chave Pix, troca de senha
-│   │   │   └── Users.js          # Gerenciamento de usuários (admin)
-│   │   └── lib/
-│   │       ├── api.js            # Cliente HTTP com JWT automático
-│   │       ├── utils.js          # Formatadores de data, moeda, telefone
-│   │       └── toast.js          # Sistema de notificações
-├── docker-compose.yml
-└── README.md
-
 Instalação e Execução Local
 Pré-requisitos: Node.js 18 ou superior.
 bash# Backend
