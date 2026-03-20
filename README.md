@@ -3,7 +3,7 @@ Sistema web para automação de cobranças e gestão de recebíveis para pequena
 
 Visão Geral
 O sistema cobre o ciclo completo de cobranças: cadastro de clientes, emissão de cobranças com links Pix, envio automático de lembretes por WhatsApp e email, análise de risco com inteligência artificial, relatórios exportáveis e controle de acesso por usuários.
-Integrações externas são opcionais. Sem nenhuma chave configurada, o sistema funciona em modo mock — mensagens são exibidas no console e links Pix são simulados localmente. Cada integração pode ser ativada individualmente adicionando a chave correspondente no arquivo .env.
+Integrações externas são opcionais. Sem nenhuma chave configurada, o sistema funciona em modo mock, mensagens são exibidas no console e links Pix são simulados localmente. Cada integração pode ser ativada individualmente adicionando a chave correspondente no arquivo .env.
 
 Stack
 Backend
@@ -97,7 +97,7 @@ Auth: JWT ativo — login: admin@empresa.com / admin123
 
 Variáveis de Ambiente
 Copie backend/.env.example para backend/.env e preencha conforme necessário. Nenhuma variável é obrigatória para o sistema funcionar em modo de desenvolvimento.
-VariávelDescriçãoObrigatóriaANTHROPIC_API_KEYChave da API Claude — ativa IA no sistemaNãoZAPI_INSTANCE_ID / ZAPI_TOKENCredenciais Z-API para WhatsApp realNãoTWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKENCredenciais Twilio para WhatsAppNãoRESEND_API_KEYChave Resend para email realNãoEMAIL_HOST / EMAIL_USER / EMAIL_PASSConfiguração SMTP alternativaNãoASAAS_API_KEYChave Asaas para cobranças Pix reaisNãoASAAS_SANDBOXtrue para ambiente de testes do AsaasNãoJWT_SECRETSegredo para assinar tokens JWTRecomendado em produçãoBASE_URLURL pública do servidor (usada nos links Pix)Recomendado em produçãoFRONTEND_URLOrigem permitida pelo CORSRecomendado em produçãoCOMPANY_NAMENome da empresa exibido nos emailsNãoPIX_KEYChave Pix exibida na página de pagamento mockNão
+VariávelDescriçãoObrigatóriaANTHROPIC_API_KEYChave da API Claude ativa IA no sistemaNãoZAPI_INSTANCE_ID / ZAPI_TOKENCredenciais Z-API para WhatsApp realNãoTWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKENCredenciais Twilio para WhatsAppNãoRESEND_API_KEYChave Resend para email realNãoEMAIL_HOST / EMAIL_USER / EMAIL_PASSConfiguração SMTP alternativaNãoASAAS_API_KEYChave Asaas para cobranças Pix reaisNãoASAAS_SANDBOXtrue para ambiente de testes do AsaasNãoJWT_SECRETSegredo para assinar tokens JWTRecomendado em produçãoBASE_URLURL pública do servidor (usada nos links Pix)Recomendado em produçãoFRONTEND_URLOrigem permitida pelo CORSRecomendado em produçãoCOMPANY_NAMENome da empresa exibido nos emailsNãoPIX_KEYChave Pix exibida na página de pagamento mockNão
 
 API — Endpoints Principais
 Todos os endpoints exceto /auth/login, /health e /pix/:token exigem o header:
