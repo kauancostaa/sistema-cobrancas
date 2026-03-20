@@ -1,0 +1,365 @@
+// frontend/src/pages/Customers.js
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { api } from '../lib/api';
+import { formatCurrency, formatDate, statusLabel } from '../lib/utils';
+
+export default function Customers() {
+  const { id } = useParams();
+  const [customers, setCustomers] = useState([]);
+  const [customer, setCustomer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    amount: '',
+    due_date: '',
+    description: ''
+  });
+
+  // Se tem ID na URL, carrega um cliente específico
+  useEffect(() => {
+    if (id) {
+      loadCustomer(id);
+    } else {
+      loadCustomers();
+    }
+  }, [id]);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getCustomers();
+      setCustomers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Erro ao carregar clientes:', err);
+      setError('Erro ao carregar clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCustomer = async (customerId) => {
+    try {
+      setLoading(true);
+      const data = await api.getCustomer(customerId);
+      setCustomer(data);
+    } catch (err) {
+      console.error('Erro ao carregar cliente:', err);
+      setError('Erro ao carregar cliente');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (paymentId, newStatus) => {
+    try {
+      await api.updatePaymentStatus(paymentId, newStatus);
+      // Recarregar cliente para mostrar atualização
+      if (id) {
+        await loadCustomer(id);
+      }
+    } catch (err) {
+      console.error('Erro ao atualizar status:', err);
+      alert('Erro ao atualizar status: ' + err.message);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.createCustomer(formData);
+      setShowForm(false);
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        amount: '',
+        due_date: '',
+        description: ''
+      });
+      loadCustomers();
+    } catch (err) {
+      console.error('Erro ao criar cliente:', err);
+      alert('Erro ao criar cliente: ' + err.message);
+    }
+  };
+
+  const handleDelete = async (customerId) => {
+    if (!window.confirm('Tem certeza que deseja excluir este cliente?')) {
+      return;
+    }
+    try {
+      await api.deleteCustomer(customerId);
+      loadCustomers();
+    } catch (err) {
+      console.error('Erro ao excluir cliente:', err);
+      alert('Erro ao excluir cliente: ' + err.message);
+    }
+  };
+
+  if (loading) return <LoadingState />;
+  if (error) return <div className="alert alert-error">{error}</div>;
+
+  // Se está visualizando um cliente específico
+  if (id && customer) {
+    return (
+      <div>
+        <div className="page-header">
+          <div>
+            <div className="page-title">{customer.name}</div>
+            <div className="page-subtitle">
+              {customer.phone} • {customer.email || 'Sem email'}
+            </div>
+          </div>
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => window.location.href = '/customers'}
+          >
+            Voltar
+          </button>
+        </div>
+
+        {/* Cobranças do cliente */}
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 600 }}>Cobranças</h3>
+            <button 
+              className="btn btn-primary btn-sm"
+              onClick={() => window.location.href = `/payments/new?customer_id=${customer.id}`}
+            >
+              Nova Cobrança
+            </button>
+          </div>
+
+          {customer.payments && customer.payments.length > 0 ? (
+            <table style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th style={tableHeader}>Valor</th>
+                  <th style={tableHeader}>Vencimento</th>
+                  <th style={tableHeader}>Status</th>
+                  <th style={tableHeader}>Descrição</th>
+                  <th style={tableHeader}>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customer.payments.map(payment => (
+                  <tr key={payment.id} style={tableRow}>
+                    <td style={tableCell}>{formatCurrency(payment.amount)}</td>
+                    <td style={tableCell}>{formatDate(payment.due_date)}</td>
+                    <td style={tableCell}>
+                      <select 
+                        value={payment.status}
+                        onChange={(e) => handleStatusChange(payment.id, e.target.value)}
+                        className={`badge badge-${payment.status}`}
+                        style={{ padding: '4px 8px', borderRadius: 4 }}
+                      >
+                        <option value="pending">Pendente</option>
+                        <option value="paid">Pago</option>
+                        <option value="overdue">Vencido</option>
+                      </select>
+                    </td>
+                    <td style={tableCell}>{payment.description || '-'}</td>
+                    <td style={tableCell}>
+                      {payment.pix_url && (
+                        <a 
+                          href={payment.pix_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ color: 'var(--primary)', textDecoration: 'none' }}
+                        >
+                          Link Pix
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="empty-state">
+              <p>Nenhuma cobrança encontrada para este cliente.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Lista de clientes
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title">Clientes</div>
+          <div className="page-subtitle">Gerencie seus clientes e cobranças</div>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Cancelar' : 'Novo Cliente'}
+        </button>
+      </div>
+
+      {/* Formulário de novo cliente */}
+      {showForm && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Novo Cliente</h3>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <input
+                type="text"
+                name="name"
+                placeholder="Nome *"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                name="phone"
+                placeholder="Telefone *"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+                style={inputStyle}
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                name="amount"
+                placeholder="Valor da cobrança (opcional)"
+                value={formData.amount}
+                onChange={handleInputChange}
+                style={inputStyle}
+              />
+              <input
+                type="date"
+                name="due_date"
+                placeholder="Data de vencimento"
+                value={formData.due_date}
+                onChange={handleInputChange}
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                name="description"
+                placeholder="Descrição da cobrança"
+                value={formData.description}
+                onChange={handleInputChange}
+                style={inputStyle}
+              />
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: 16 }}>
+              Salvar
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Lista de clientes */}
+      <div className="card">
+        {customers.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-title">Nenhum cliente cadastrado</div>
+            <div className="empty-description">
+              Cadastre seu primeiro cliente para começar
+            </div>
+          </div>
+        ) : (
+          <table style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={tableHeader}>Nome</th>
+                <th style={tableHeader}>Telefone</th>
+                <th style={tableHeader}>Email</th>
+                <th style={tableHeader}>Total Cobranças</th>
+                <th style={tableHeader}>Total Pago</th>
+                <th style={tableHeader}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map(c => (
+                <tr key={c.id} style={tableRow}>
+                  <td style={tableCell}>{c.name}</td>
+                  <td style={tableCell}>{c.phone}</td>
+                  <td style={tableCell}>{c.email || '-'}</td>
+                  <td style={tableCell}>{formatCurrency(c.total_amount || 0)}</td>
+                  <td style={tableCell}>{formatCurrency(c.paid_amount || 0)}</td>
+                  <td style={tableCell}>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button 
+                        onClick={() => window.location.href = `/customers/${c.id}`}
+                        className="btn btn-sm btn-secondary"
+                      >
+                        Ver
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(c.id)}
+                        className="btn btn-sm btn-danger"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div>
+      <div className="page-header">
+        <div className="page-title">Clientes</div>
+      </div>
+      <div className="card" style={{ height: 400, background: 'var(--gray-100)', animation: 'pulse 1.5s infinite' }} />
+    </div>
+  );
+}
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px 12px',
+  border: '1px solid var(--gray-200)',
+  borderRadius: 6,
+  fontSize: 14
+};
+
+const tableHeader = {
+  textAlign: 'left',
+  padding: '12px 16px',
+  borderBottom: '2px solid var(--gray-200)',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'var(--gray-600)'
+};
+
+const tableRow = {
+  borderBottom: '1px solid var(--gray-100)'
+};
+
+const tableCell = {
+  padding: '12px 16px',
+  fontSize: 14
+};

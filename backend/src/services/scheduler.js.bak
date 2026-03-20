@@ -1,0 +1,77 @@
+const cron = require('node-cron');
+const { getDb } = require('../db/database');
+const { sendMessage, buildMessage, MESSAGE_TYPES } = require('./whatsapp');
+const { generatePixLink, getPixLink } = require('./pix');
+
+function today() {
+  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+function daysFromToday(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
+
+/**
+ * Returns true if we already sent a message of this type for this payment today.
+ */
+function alreadySentToday(db, paymentId, type) {
+  const row = db.prepare(`
+    SELECT id FROM message_logs
+    WHERE payment_id = ? AND type = ? AND date(sent_at) = date('now')
+  `).get(paymentId, type);
+  return !!row;
+}
+
+async function runScheduler() {
+  const db = getDb();
+  const todayStr = today();
+  const in2days  = daysFromToday(2);
+
+  console.log(`[Scheduler] Running at ${new Date().toLocaleString('pt-BR')}`);
+
+  // Fetch all pending payments with their customers
+  const payments = db.prepare(`
+    SELECT p.*, c.name AS customer_name, c.phone AS customer_phone
+    FROM payments p
+    JOIN customers c ON c.id = p.customer_id
+    WHERE p.status = 'pending'
+  `).all();
+
+  for (const payment of payments) {
+    const customer = { name: payment.customer_name, phone: payment.customer_phone };
+    const pixUrl   = getPixLink(payment.id) || generatePixLink(payment.id, payment.amount);
+
+    // 1. Reminder 2 days before due date
+    if (payment.due_date === in2days && !alreadySentToday(db, payment.id, MESSAGE_TYPES.REMINDER_BEFORE)) {
+      const msg = buildMessage(MESSAGE_TYPES.REMINDER_BEFORE, customer, payment, pixUrl);
+      await sendMessage(payment.customer_phone, msg, payment.id, MESSAGE_TYPES.REMINDER_BEFORE);
+    }
+
+    // 2. Due today
+    if (payment.due_date === todayStr && !alreadySentToday(db, payment.id, MESSAGE_TYPES.DUE_TODAY)) {
+      const msg = buildMessage(MESSAGE_TYPES.DUE_TODAY, customer, payment, pixUrl);
+      await sendMessage(payment.customer_phone, msg, payment.id, MESSAGE_TYPES.DUE_TODAY);
+    }
+
+    // 3. Overdue (due_date < today)
+    if (payment.due_date < todayStr && !alreadySentToday(db, payment.id, MESSAGE_TYPES.OVERDUE)) {
+      const msg = buildMessage(MESSAGE_TYPES.OVERDUE, customer, payment, pixUrl);
+      await sendMessage(payment.customer_phone, msg, payment.id, MESSAGE_TYPES.OVERDUE);
+    }
+  }
+
+  console.log(`[Scheduler] Processed ${payments.length} payment(s)`);
+}
+
+function startScheduler() {
+  // Run every hour
+  cron.schedule('0 * * * *', runScheduler);
+  console.log('[Scheduler] Started — runs every hour');
+
+  // Also run once immediately on startup (for dev convenience)
+  runScheduler().catch(console.error);
+}
+
+module.exports = { startScheduler, runScheduler };

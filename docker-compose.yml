@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - db_data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Q38 — Change BASE_URL to your public server URL for real Pix links
+      - BASE_URL=http://localhost:3001
+      - FRONTEND_URL=http://localhost:3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Q13 — API URL baked in at build time
+        # For Docker: use the nginx proxy path or set to public backend URL
+        REACT_APP_API_URL: ""
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        # Q39 — wait for backend health before starting frontend
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db_data:
