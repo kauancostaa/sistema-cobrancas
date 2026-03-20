@@ -219,32 +219,32 @@ Altere a senha imediatamente apos o primeiro acesso em Configuracoes > Alterar s
 
 ## Screenshots
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs-screenshots/dashboard.png)
 
-![Login](docs/screenshots/login.png)
+![Login](docs-screenshots/login.png)
 
-![Clientes](docs/screenshots/clientes.png)
+![Clientes](docs-screenshots/clientes.png)
 
-![Novo Cliente](docs/screenshots/clientes-novo-cliente.png)
+![Novo Cliente](docs-screenshots/clientes-novo%20cliente.png)
 
-![Importar CSV](docs/screenshots/clientes-importar-csv.png)
+![Importar CSV](docs-screenshots/clientes-importar%20csv.png)
 
-![Cobranças](docs/screenshots/cobrancas.png)
+![Cobranças](docs-screenshots/cobrancas.png)
 
-![Nova Cobrança](docs/screenshots/cobrancas-nova-cobranca.png)
+![Nova Cobrança](docs-screenshots/cobrancas-nova%20cobranca.png)
 
-![Recorrências](docs/screenshots/recorrencia.png)
+![Recorrências](docs-screenshots/recorrencia.png)
 
-![Nova Recorrência](docs/screenshots/recorrencia-nova-recorrencia.png)
+![Nova Recorrência](docs-screenshots/recorrencia-nova%20recorrencia.png)
 
-![Relatórios](docs/screenshots/relatorios.png)
+![Relatórios](docs-screenshots/relatorios.png)
 
-![Export PDF](docs/screenshots/pdfexport.png)
+![Export PDF](docs-screenshots/pdfexport.png)
 
-![Mensagens](docs/screenshots/mensagens.png)
+![Mensagens](docs-screenshots/mensagens.png)
 
-![Usuários](docs/screenshots/usuarios.png)
+![Usuários](docs-screenshots/usuarios.png)
 
-![Novo Usuário](docs/screenshots/novousuario.png)
+![Novo Usuário](docs-screenshots/novousuario.png)
 
-![Configurações](docs/screenshots/configs.png)
+![Configurações](docs-screenshots/configs.png)
